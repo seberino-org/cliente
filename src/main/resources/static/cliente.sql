@@ -1,0 +1,1 @@
+create table cliente (cpf decimal(11,0) primary key not null, nome varchar(50) not null, mae varchar(50), logradouro varchar(35), numero int, complemento varchar(40), cep char(9), cidade varchar(40), uf char(2), nasc date )
