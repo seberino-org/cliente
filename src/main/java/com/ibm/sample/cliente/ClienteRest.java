@@ -71,8 +71,8 @@ public class ClienteRest {
 		{
 			RetornoCliente retorno = new RetornoCliente();
 			retorno.setCliente(cliente);
-			retorno.setMensagem( "Cliente reigstrado com sucesso!");
-			retorno.setCodigo("201-CREATED");
+			retorno.setMensagem( "Problema com os dados informados: " + e.getMessage());
+			retorno.setCodigo("400-BAD REQUEST");
 			
 			return retorno;
 		}
