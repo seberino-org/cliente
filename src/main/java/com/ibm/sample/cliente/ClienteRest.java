@@ -46,21 +46,51 @@ public class ClienteRest {
 	@PostMapping("/cliente")
 	public RetornoCliente incluiCliente(@RequestBody Cliente cliente)
 	{
-		Optional<Cliente> clienteConsulta= clienteJpa.findById(cliente.getCpf());
-		RetornoCliente retorno = new RetornoCliente();
-		if (clienteConsulta.isPresent())
+		try
 		{
-			retorno.setCliente(clienteConsulta.get());
-			retorno.setMensagem( "Já existe cliente cadastrado com esse CPF!");
-			retorno.setCodigo("303-CLIENT EXIST");
+			validaCliente(cliente);
+			
+			Optional<Cliente> clienteConsulta= clienteJpa.findById(cliente.getCpf());
+			RetornoCliente retorno = new RetornoCliente();
+			if (clienteConsulta.isPresent())
+			{
+				retorno.setCliente(clienteConsulta.get());
+				retorno.setMensagem( "Já existe cliente cadastrado com esse CPF!");
+				retorno.setCodigo("303-CLIENT EXIST");
+				return retorno;
+			}
+			
+			clienteJpa.save(cliente);
+			retorno.setCliente(cliente);
+			retorno.setMensagem( "Cliente reigstrado com sucesso!");
+			retorno.setCodigo("201-CREATED");
+			
 			return retorno;
 		}
-		
-		clienteJpa.save(cliente);
-		retorno.setCliente(cliente);
-		retorno.setMensagem( "Cliente reigstrado com sucesso!");
-		retorno.setCodigo("201-CREATED");
-		
-		return retorno;
+		catch (Exception e)
+		{
+			RetornoCliente retorno = new RetornoCliente();
+			retorno.setCliente(cliente);
+			retorno.setMensagem( "Cliente reigstrado com sucesso!");
+			retorno.setCodigo("201-CREATED");
+			
+			return retorno;
+		}
+	}
+	
+	private void validaCliente(Cliente cliente) throws Exception
+	{
+		if (cliente==null)
+		{
+			throw new Exception("Payload inváido, não foram encontrados os dados do cliente");
+		}
+		if (cliente.getCpf()==null || cliente.getCpf()==0)
+		{
+			throw new Exception("CPF é um campo obrigatório");
+		}
+		if (cliente.getNome()==null || cliente.getNome().length()==0)
+		{
+			throw new Exception("Nome é um campo obrigatório");
+		}
 	}
 }
