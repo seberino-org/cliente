@@ -1,5 +1,6 @@
 package com.ibm.sample.cliente;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,18 @@ public class ClienteRest {
 
 	@Autowired
 	private ClienteRepository clienteJpa;
+	
+	
+	
+	@GetMapping("/cliente/pesquisa/{nome}")
+	public List<Cliente> recuperaClientes(@PathVariable String nome)
+	{
+		List<Cliente> lista = clienteJpa.findByNome(nome);
+	
+		
+		return lista;
+	}
+
 	
 	@GetMapping("/cliente/{cpf}")
 	public RetornoCliente recuperaCliente(@PathVariable Long cpf)
