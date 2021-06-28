@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +34,30 @@ public class ClienteRest {
 		return lista;
 	}
 
+	
+	@DeleteMapping("/cliente/{cpf}")
+	public RetornoCliente excluirCliente(@PathVariable Long cpf)
+	{
+		Optional<Cliente> cliente= clienteJpa.findById(cpf);
+	
+		RetornoCliente retorno = new RetornoCliente();
+		if (cliente.isEmpty())
+		{
+			retorno.setCliente(null);
+			retorno.setMensagem("Cliente Não encontrado!");
+			retorno.setCodigo("404-NOT FOUND");
+		}
+		else
+		{
+			Cliente cli = cliente.get();
+			retorno.setCliente(cli);
+			clienteJpa.delete(cli);
+			retorno.setMensagem( "Cliente Excluido!");
+			retorno.setCodigo("202-Excluido");
+		}
+		
+		return retorno;
+	}
 	
 	@GetMapping("/cliente/{cpf}")
 	public RetornoCliente recuperaCliente(@PathVariable Long cpf)
@@ -74,6 +99,7 @@ public class ClienteRest {
 			}
 			
 			clienteJpa.save(cliente);
+			
 			retorno.setCliente(cliente);
 			retorno.setMensagem( "Cliente reigstrado com sucesso!");
 			retorno.setCodigo("201-CREATED");
