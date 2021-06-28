@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.ibm.sample.cliente</groupId>
 	<artifactId>Cliente</artifactId>
-	<version>0.0.1-beta</version>
+	<version>0.0.2</version>
 	<name>Cliente</name>
 	<description>MIcroserviço para gestão dos dados do cliente</description>
 	<properties>
