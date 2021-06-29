@@ -99,7 +99,7 @@ public class ClienteRest {
 			clienteJpa.save(cliente);
 			
 			retorno.setCliente(cliente);
-			retorno.setMensagem( "Cliente reigstrado com sucesso!");
+			retorno.setMensagem( "Cliente registrado com sucesso!");
 			retorno.setCodigo("201-CREATED");
 			
 			return ResponseEntity.ok(retorno);
