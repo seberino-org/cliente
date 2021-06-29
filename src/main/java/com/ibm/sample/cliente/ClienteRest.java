@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,16 +38,14 @@ public class ClienteRest {
 
 	
 	@DeleteMapping("/cliente/{cpf}")
-	public RetornoCliente excluirCliente(@PathVariable Long cpf)
+	public ResponseEntity<RetornoCliente> excluirCliente(@PathVariable Long cpf)
 	{
 		Optional<Cliente> cliente= clienteJpa.findById(cpf);
 	
 		RetornoCliente retorno = new RetornoCliente();
 		if (cliente.isEmpty())
 		{
-			retorno.setCliente(null);
-			retorno.setMensagem("Cliente Não encontrado!");
-			retorno.setCodigo("404-NOT FOUND");
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND); 
 		}
 		else
 		{
@@ -56,20 +56,18 @@ public class ClienteRest {
 			retorno.setCodigo("202-Excluido");
 		}
 		
-		return retorno;
+		return ResponseEntity.ok(retorno);
 	}
 	
 	@GetMapping("/cliente/{cpf}")
-	public RetornoCliente recuperaCliente(@PathVariable Long cpf)
+	public ResponseEntity<RetornoCliente> recuperaCliente(@PathVariable Long cpf)
 	{
 		Optional<Cliente> cliente= clienteJpa.findById(cpf);
 	
 		RetornoCliente retorno = new RetornoCliente();
 		if (cliente.isEmpty())
 		{
-			retorno.setCliente(null);
-			retorno.setMensagem("Cliente Não encontrado!");
-			retorno.setCodigo("404-NOT FOUND");
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		else
 		{
@@ -78,11 +76,11 @@ public class ClienteRest {
 			retorno.setCodigo("200-FOUND");
 		}
 		
-		return retorno;
+		return ResponseEntity.ok(retorno);
 	}
 	
 	@PostMapping("/cliente")
-	public RetornoCliente incluiCliente(@RequestBody Cliente cliente)
+	public ResponseEntity<RetornoCliente> incluiCliente(@RequestBody Cliente cliente)
 	{
 		try
 		{
@@ -95,7 +93,7 @@ public class ClienteRest {
 				retorno.setCliente(clienteConsulta.get());
 				retorno.setMensagem( "Já existe cliente cadastrado com esse CPF!");
 				retorno.setCodigo("303-CLIENT EXIST");
-				return retorno;
+				return new ResponseEntity<>(HttpStatus.FOUND);
 			}
 			
 			clienteJpa.save(cliente);
@@ -104,16 +102,11 @@ public class ClienteRest {
 			retorno.setMensagem( "Cliente reigstrado com sucesso!");
 			retorno.setCodigo("201-CREATED");
 			
-			return retorno;
+			return ResponseEntity.ok(retorno);
 		}
 		catch (Exception e)
 		{
-			RetornoCliente retorno = new RetornoCliente();
-			retorno.setCliente(cliente);
-			retorno.setMensagem( "Problema com os dados informados: " + e.getMessage());
-			retorno.setCodigo("400-BAD REQUEST");
-			
-			return retorno;
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
 	
