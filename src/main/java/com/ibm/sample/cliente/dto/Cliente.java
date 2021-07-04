@@ -83,5 +83,9 @@ public class Cliente {
 		this.nasc = nascimento;
 	}
 	
-	
+	@Override
+	public String toString()
+	{
+		return "Nome: " + this.nome + ", cpf: " + this.cpf;
+	}
 }
