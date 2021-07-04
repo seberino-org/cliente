@@ -98,7 +98,7 @@ public class ClienteRest {
 			validaCliente(cliente);
 			logger.debug("Dados validados com sucesso!");
 			
-			logger.debug("Vai pesquisar se já não existe cliente cadastrado com esse CPF")
+			logger.debug("Vai pesquisar se já não existe cliente cadastrado com esse CPF");
 			Optional<Cliente> clienteConsulta= clienteJpa.findById(cliente.getCpf());
 			RetornoCliente retorno = new RetornoCliente();
 			if (clienteConsulta.isPresent())
