@@ -13,9 +13,6 @@
 	<version>0.0.2</version>
 	<name>Cliente</name>
 	<description>MIcroserviço para gestão dos dados do cliente</description>
-	<properties>
-		<java.version>16</java.version>
-	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
