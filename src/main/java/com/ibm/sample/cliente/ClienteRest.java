@@ -107,18 +107,32 @@ public class ClienteRest extends PropagacaoContexto {
 	{
 		logger.debug("[incluiCliente] ");
 		Span span = this.startServerSpan("inclusaoClienteBaseDados", request);
-
 		try
 		{
 			logger.debug("Vai validar os dados do cliente para cadastro!");
 			validaCliente(cliente);
 			span.setTag("cpf", cliente.getCpf());
 			span.setTag("nome", cliente.getNome());
+			span.setTag("nome", cliente.getNome());
+			span.setTag("mae", cliente.getMae());
+			span.setTag("logradouro", cliente.getLogradouro());
+			span.setTag("numero", cliente.getNumero());
+			span.setTag("complemento", cliente.getComplemento());
+			span.setTag("cep", cliente.getCep());
+			span.setTag("cidade", cliente.getCidade());
+			span.setTag("uf", cliente.getUf());
+			span.setTag("nascimento", cliente.getNasc().toString());
 			logger.debug("Dados validados com sucesso!");
 			
 			logger.debug("Vai pesquisar se já não existe cliente cadastrado com esse CPF");
+			Span spanConsulta = tracer.buildSpan("consultaBaseMySQL").asChildOf(span).start();
+			spanConsulta.setTag("sql", "select * from cliente where cpf = ? ");
+			spanConsulta.setTag("cpf", cliente.getCpf());
 			Optional<Cliente> clienteConsulta= clienteJpa.findById(cliente.getCpf());
+			spanConsulta.finish();
 			RetornoCliente retorno = new RetornoCliente();
+
+			
 			if (clienteConsulta.isPresent())
 			{
 				span.log("Já existe cliente cadastrado com esse CPF");
@@ -129,8 +143,20 @@ public class ClienteRest extends PropagacaoContexto {
 				
 				return new ResponseEntity<>(HttpStatus.FOUND);
 			}
-			
+			Span spanGravacao = tracer.buildSpan("gravacaoBaseMysql").asChildOf(span).start();
+			spanGravacao.setTag("sql", "insert into cliente values (?,?,?,?,?,?,?,?,?,?) ");
+			spanGravacao.setTag("cpf", cliente.getCpf());
+			spanGravacao.setTag("nome", cliente.getNome());
+			spanGravacao.setTag("mae", cliente.getMae());
+			spanGravacao.setTag("logradouro", cliente.getLogradouro());
+			spanGravacao.setTag("numero", cliente.getNumero());
+			spanGravacao.setTag("complemento", cliente.getComplemento());
+			spanGravacao.setTag("cep", cliente.getCep());
+			spanGravacao.setTag("cidade", cliente.getCidade());
+			spanGravacao.setTag("uf", cliente.getUf());
+			spanGravacao.setTag("nascimento", cliente.getNasc().toString());
 			clienteJpa.save(cliente);
+			spanGravacao.finish();
 			logger.info("Cliente armazenado na base de dados com sucesso! " + cliente.toString());
 
 			retorno.setCliente(cliente);
