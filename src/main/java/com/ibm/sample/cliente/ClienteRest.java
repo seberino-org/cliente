@@ -110,7 +110,7 @@ public class ClienteRest extends PropagacaoContexto {
 		try
 		{
 			logger.debug("Vai validar os dados do cliente para cadastro!");
-			validaCliente(cliente);
+			validaCliente(span,cliente);
 			span.setTag("cpf", cliente.getCpf());
 			span.setTag("nome", cliente.getNome());
 			span.setTag("nome", cliente.getNome());
@@ -167,6 +167,8 @@ public class ClienteRest extends PropagacaoContexto {
 		}
 		catch (Exception e)
 		{
+			span.setTag("error",true);
+			span.setTag("errorMessage", e.getMessage());
 			logger.error("Falha ao cadastrar cliente " + e.getMessage(), e);
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
@@ -176,19 +178,30 @@ public class ClienteRest extends PropagacaoContexto {
 		}
 	}
 	
-	private void validaCliente(Cliente cliente) throws Exception
+	private void validaCliente(Span spanPai, Cliente cliente) throws Exception
 	{
+		Span span = tracer.buildSpan("validaDadosCliente").asChildOf(spanPai).start();
 		if (cliente==null)
 		{
+			span.setTag("errorMessage", "Payload inváido, não foram encontrados os dados do cliente");
+			span.setTag("error", true);
+			span.finish();
 			throw new Exception("Payload inváido, não foram encontrados os dados do cliente");
 		}
 		if (cliente.getCpf()==null || cliente.getCpf()==0)
 		{
+			span.setTag("errorMessage", "CPF é um campo obrigatorio");
+			span.setTag("error", true);
+			span.finish();
 			throw new Exception("CPF é um campo obrigatório");
 		}
 		if (cliente.getNome()==null || cliente.getNome().length()==0)
 		{
+			span.setTag("errorMessage", "Nome é um campo obrigatorio");
+			span.setTag("error", true);
+			span.finish();
 			throw new Exception("Nome é um campo obrigatório");
 		}
+		span.finish();
 	}
 }
