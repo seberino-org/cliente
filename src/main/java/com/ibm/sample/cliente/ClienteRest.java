@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.micrometer.core.instrument.Counter;
 import io.opentracing.Span;
 
 import com.ibm.sample.PropagacaoContexto;
@@ -34,6 +35,18 @@ public class ClienteRest extends PropagacaoContexto {
 	Logger logger = LoggerFactory.getLogger(ClienteRest.class);
 	
 	
+	@Autowired
+	Counter contadorNovosCadastrosJaExiste;
+
+	@Autowired
+	Counter contadorNovosCadastrosFalha;
+
+	@Autowired
+	Counter contadorNovosCadastros;
+
+	@Autowired
+	Counter contadorExclusaoCliente;
+
 	@GetMapping("/cliente/pesquisa/{nome}")
 	public List<Cliente> recuperaClientes(@PathVariable String nome, HttpServletRequest request)
 	{
@@ -68,6 +81,7 @@ public class ClienteRest extends PropagacaoContexto {
 			clienteJpa.delete(cli);
 			retorno.setMensagem( "Cliente Excluido!");
 			logger.debug("Cliente excluido com sucesso " + cli.toString());
+			contadorExclusaoCliente.increment();
 			retorno.setCodigo("202-Excluido");
 		}
 		span.finish();
@@ -139,8 +153,9 @@ public class ClienteRest extends PropagacaoContexto {
 				logger.info("Já existe cliente cadastrado com o CPF: " + cliente.getCpf());
 				retorno.setCliente(clienteConsulta.get());
 				retorno.setMensagem( "Já existe cliente cadastrado com esse CPF!");
-				retorno.setCodigo("303-CLIENT EXIST");
+				retorno.setCodigo("208-CLIENT EXIST");
 				
+				contadorNovosCadastrosJaExiste.increment();
 				return new ResponseEntity<>(HttpStatus.FOUND);
 			}
 			Span spanGravacao = tracer.buildSpan("gravacaoBaseMysql").asChildOf(span).start();
@@ -161,6 +176,7 @@ public class ClienteRest extends PropagacaoContexto {
 
 			retorno.setCliente(cliente);
 			retorno.setMensagem( "Cliente registrado com sucesso!");
+			contadorNovosCadastros.increment();
 			retorno.setCodigo("201-CREATED");
 			
 			return ResponseEntity.ok(retorno);
@@ -170,6 +186,7 @@ public class ClienteRest extends PropagacaoContexto {
 			span.setTag("error",true);
 			span.setTag("errorMessage", e.getMessage());
 			logger.error("Falha ao cadastrar cliente " + e.getMessage(), e);
+			contadorNovosCadastrosFalha.increment();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		finally
