@@ -188,7 +188,6 @@ public class ClienteRest extends PropagacaoContexto {
 			span.setTag("error",true);
 			span.setTag("errorMessage", e.getMessage());
 			logger.error("Falha ao cadastrar cliente " + e.getMessage(), e);
-			contadorNovosCadastrosFalha.increment();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		finally
