@@ -35,17 +35,19 @@ public class ClienteRest extends PropagacaoContexto {
 	Logger logger = LoggerFactory.getLogger(ClienteRest.class);
 	
 	
-	@Autowired
-	Counter contadorNovosCadastrosJaExiste;
+
 
 	@Autowired
-	Counter contadorNovosCadastrosFalha;
+	Counter contadorRequperaCliente;
 
 	@Autowired
-	Counter contadorNovosCadastros;
+	Counter contadorPesquisaClientes;
 
 	@Autowired
-	Counter contadorExclusaoCliente;
+	Counter contadorExcluiClientes;
+
+	@Autowired
+	Counter contadorCadastroClientes;
 
 	@GetMapping("/cliente/pesquisa/{nome}")
 	public List<Cliente> recuperaClientes(@PathVariable String nome, HttpServletRequest request)
@@ -54,6 +56,7 @@ public class ClienteRest extends PropagacaoContexto {
 		Span span = this.startServerSpan("consultaBaseDados", request);
 		List<Cliente> lista = clienteJpa.findByNome(nome);
 		logger.debug("Encontrado: " + lista.size() + " clientes na pesquisa pelo nome " + nome);
+		contadorPesquisaClientes.increment();
 		span.finish();
 		return lista;
 	}
@@ -81,7 +84,7 @@ public class ClienteRest extends PropagacaoContexto {
 			clienteJpa.delete(cli);
 			retorno.setMensagem( "Cliente Excluido!");
 			logger.debug("Cliente excluido com sucesso " + cli.toString());
-			contadorExclusaoCliente.increment();
+			contadorExcluiClientes.increment();
 			retorno.setCodigo("202-Excluido");
 		}
 		span.finish();
@@ -95,7 +98,7 @@ public class ClienteRest extends PropagacaoContexto {
 		Span span = this.startServerSpan("consultaBaseDados", request);
 		span.setTag("cpf", cpf);
 		Optional<Cliente> cliente= clienteJpa.findById(cpf);
-	
+		contadorRequperaCliente.increment();
 		RetornoCliente retorno = new RetornoCliente();
 		if (cliente.isEmpty())
 		{
@@ -123,6 +126,7 @@ public class ClienteRest extends PropagacaoContexto {
 		Span span = this.startServerSpan("inclusaoClienteBaseDados", request);
 		try
 		{
+			
 			logger.debug("Vai validar os dados do cliente para cadastro!");
 			validaCliente(span,cliente);
 			span.setTag("cpf", cliente.getCpf());
@@ -154,8 +158,6 @@ public class ClienteRest extends PropagacaoContexto {
 				retorno.setCliente(clienteConsulta.get());
 				retorno.setMensagem( "Já existe cliente cadastrado com esse CPF!");
 				retorno.setCodigo("208-CLIENT EXIST");
-				
-				contadorNovosCadastrosJaExiste.increment();
 				return new ResponseEntity<>(HttpStatus.FOUND);
 			}
 			Span spanGravacao = tracer.buildSpan("gravacaoBaseMysql").asChildOf(span).start();
@@ -176,7 +178,7 @@ public class ClienteRest extends PropagacaoContexto {
 
 			retorno.setCliente(cliente);
 			retorno.setMensagem( "Cliente registrado com sucesso!");
-			contadorNovosCadastros.increment();
+			contadorCadastroClientes.increment();
 			retorno.setCodigo("201-CREATED");
 			
 			return ResponseEntity.ok(retorno);
