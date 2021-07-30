@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import io.opentracing.Span;
 
 import com.ibm.sample.PropagacaoContexto;
@@ -35,7 +37,8 @@ public class ClienteRest extends PropagacaoContexto {
 	Logger logger = LoggerFactory.getLogger(ClienteRest.class);
 	
 	
-
+    @Autowired
+    MeterRegistry registry;
 
 	@Autowired
 	Counter contadorRequperaCliente;
@@ -52,12 +55,14 @@ public class ClienteRest extends PropagacaoContexto {
 	@GetMapping("/cliente/pesquisa/{nome}")
 	public List<Cliente> recuperaClientes(@PathVariable String nome, HttpServletRequest request)
 	{
+		Timer.Sample timer = Timer.start(registry);
 		logger.debug("[recuperaClientes] " + nome);
 		Span span = this.startServerSpan("consultaBaseDados", request);
 		List<Cliente> lista = clienteJpa.findByNome(nome);
 		logger.debug("Encontrado: " + lista.size() + " clientes na pesquisa pelo nome " + nome);
 		contadorPesquisaClientes.increment();
 		span.finish();
+		timer.stop(registry.timer("app.duration", "app", "cliente-rest", "funcao", "recuperaClientes"));
 		return lista;
 	}
 
@@ -65,6 +70,7 @@ public class ClienteRest extends PropagacaoContexto {
 	@DeleteMapping("/cliente/{cpf}")
 	public ResponseEntity<RetornoCliente> excluirCliente(@PathVariable Long cpf, HttpServletRequest request)
 	{
+		Timer.Sample timer = Timer.start(registry);
 		logger.debug("[excluirCliente] " + cpf);
 		Span span = this.startServerSpan("exclusaoClienteBaseDados", request);
 		span.setTag("cpf", cpf);
@@ -88,12 +94,15 @@ public class ClienteRest extends PropagacaoContexto {
 			retorno.setCodigo("202-Excluido");
 		}
 		span.finish();
+		timer.stop(registry.timer("app.duration", "app", "cliente-rest", "funcao", "excluirCliente"));
 		return ResponseEntity.ok(retorno);
 	}
 	
 	@GetMapping("/cliente/{cpf}")
 	public ResponseEntity<RetornoCliente> recuperaCliente(@PathVariable Long cpf, HttpServletRequest request)
 	{
+		
+		Timer.Sample timer = Timer.start(registry);
 		logger.debug("[recuperaCliente] " + cpf);
 		Span span = this.startServerSpan("consultaBaseDados", request);
 		span.setTag("cpf", cpf);
@@ -116,12 +125,14 @@ public class ClienteRest extends PropagacaoContexto {
 			span.setTag("name", retorno.getCliente().getNome());
 		}
 		span.finish();
+		timer.stop(registry.timer("app.duration", "app", "cliente-rest", "funcao", "recuperaCliente"));
 		return ResponseEntity.ok(retorno);
 	}
 	
 	@PostMapping("/cliente")
 	public ResponseEntity<RetornoCliente> incluiCliente(@RequestBody Cliente cliente, HttpServletRequest request)
 	{
+		Timer.Sample timer = Timer.start(registry);
 		logger.debug("[incluiCliente] ");
 		Span span = this.startServerSpan("inclusaoClienteBaseDados", request);
 		try
@@ -180,7 +191,7 @@ public class ClienteRest extends PropagacaoContexto {
 			retorno.setMensagem( "Cliente registrado com sucesso!");
 			contadorCadastroClientes.increment();
 			retorno.setCodigo("201-CREATED");
-			
+			timer.stop(registry.timer("app.duration", "app", "cliente-rest", "funcao", "incluiCliente"));
 			return ResponseEntity.ok(retorno);
 		}
 		catch (Exception e)
