@@ -38,27 +38,5 @@ public class Metricas {
     }
 
 
-    @Bean
-    public Counter contadorNovosCadastros()
-    {
-        return registry.counter("cliente.cadastro", "status", "200");
-    }
-
-    @Bean
-    public Counter contadorNovosCadastrosFalha()
-    {
-        return registry.counter("cliente.cadastro", "status", "500");
-    }
-    
-    @Bean
-    public Counter contadorNovosCadastrosJaExiste()
-    {
-        return registry.counter("cliente.cadastro", "status", "208");
-    }
-    @Bean
-    public Counter contadorExclusaoCliente()
-    {
-        return registry.counter("cliente.exclusao", "status", "200");
-    }
 }
 
