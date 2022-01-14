@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -130,6 +131,84 @@ public class ClienteRest extends PropagacaoContexto {
 		return ResponseEntity.ok(retorno);
 	}
 	
+	@PutMapping("/cliente/{cpf}")
+	public ResponseEntity<RetornoCliente> atualizaCliente(@PathVariable Long cpf, @RequestBody Cliente cliente, HttpServletRequest request)
+	{
+		Timer.Sample timer = Timer.start(registry);
+		logger.debug("[atualizaClientes] ");
+		Span span = this.startServerSpan("atualizacaoClienteBaseDados", request);
+		try
+		{
+			
+			logger.debug("Vai validar os dados do cliente para cadastro!");
+			validaCliente(span,cliente);
+			span.setTag("cpf", cliente.getCpf());
+			span.setTag("nome", cliente.getNome());
+			span.setTag("nome", cliente.getNome());
+			span.setTag("mae", cliente.getMae());
+			span.setTag("logradouro", cliente.getLogradouro());
+			span.setTag("numero", cliente.getNumero());
+			span.setTag("complemento", cliente.getComplemento());
+			span.setTag("cep", cliente.getCep());
+			span.setTag("cidade", cliente.getCidade());
+			span.setTag("uf", cliente.getUf());
+			span.setTag("nascimento", cliente.getNasc().toString());
+			logger.debug("Dados validados com sucesso!");
+			
+			logger.debug("Vai pesquisar já o cliente existe");
+			Span spanConsulta = tracer.buildSpan("consultaBaseMySQL").asChildOf(span).start();
+			spanConsulta.setTag("sql", "select * from cliente where cpf = ? ");
+			spanConsulta.setTag("cpf", cliente.getCpf());
+			Optional<Cliente> clienteConsulta= clienteJpa.findById(cliente.getCpf());
+			spanConsulta.finish();
+			RetornoCliente retorno = new RetornoCliente();
+
+			
+			if (!clienteConsulta.isPresent())
+			{
+				span.log("Não existe cliente cadastrado com esse CPF");
+				logger.info("Não existe cliente cadastro com esse CPF: " + cliente.getCpf());
+				retorno.setCliente(clienteConsulta.get());
+				retorno.setMensagem( "Não existe cliente cadastrado com esse CPF");
+				retorno.setCodigo("404-CLIENT NOT FOUND");
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+			Span spanGravacao = tracer.buildSpan("atualizacaoBaseMysql").asChildOf(span).start();
+			spanGravacao.setTag("cpf", cliente.getCpf());
+			spanGravacao.setTag("nome", cliente.getNome());
+			spanGravacao.setTag("mae", cliente.getMae());
+			spanGravacao.setTag("logradouro", cliente.getLogradouro());
+			spanGravacao.setTag("numero", cliente.getNumero());
+			spanGravacao.setTag("complemento", cliente.getComplemento());
+			spanGravacao.setTag("cep", cliente.getCep());
+			spanGravacao.setTag("cidade", cliente.getCidade());
+			spanGravacao.setTag("uf", cliente.getUf());
+			spanGravacao.setTag("nascimento", cliente.getNasc().toString());
+			clienteJpa.save(cliente);
+			spanGravacao.finish();
+			logger.info("Cliente atualizado na base de dados com sucesso! " + cliente.toString());
+
+			retorno.setCliente(cliente);
+			retorno.setMensagem( "Cliente registrado com sucesso!");
+			contadorCadastroClientes.increment();
+			retorno.setCodigo("201-CREATED");
+			timer.stop(registry.timer("app.duration", "app", "cliente-rest", "funcao", "atualizaCliente"));
+			return ResponseEntity.ok(retorno);
+		}
+		catch (Exception e)
+		{
+			span.setTag("error",true);
+			span.setTag("errorMessage", e.getMessage());
+			logger.error("Falha ao atualizar cliente " + e.getMessage(), e);
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		finally
+		{
+			span.finish();
+		}
+
+	}
+
 	@PostMapping("/cliente")
 	public ResponseEntity<RetornoCliente> incluiCliente(@RequestBody Cliente cliente, HttpServletRequest request)
 	{
