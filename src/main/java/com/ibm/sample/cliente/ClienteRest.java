@@ -131,8 +131,8 @@ public class ClienteRest extends PropagacaoContexto {
 		return ResponseEntity.ok(retorno);
 	}
 	
-	@PutMapping("/cliente/{cpf}")
-	public ResponseEntity<RetornoCliente> atualizaCliente(@PathVariable Long cpf, @RequestBody Cliente cliente, HttpServletRequest request)
+	@PutMapping("/cliente")
+	public ResponseEntity<RetornoCliente> atualizaCliente( @RequestBody Cliente cliente, HttpServletRequest request)
 	{
 		Timer.Sample timer = Timer.start(registry);
 		logger.debug("[atualizaClientes] ");
