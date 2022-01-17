@@ -190,9 +190,9 @@ public class ClienteRest extends PropagacaoContexto {
 			logger.info("Cliente atualizado na base de dados com sucesso! " + cliente.toString());
 
 			retorno.setCliente(cliente);
-			retorno.setMensagem( "Cliente registrado com sucesso!");
+			retorno.setMensagem( "Cliente atualizado com sucesso!");
 			contadorCadastroClientes.increment();
-			retorno.setCodigo("201-CREATED");
+			retorno.setCodigo("202-ACCEPTED");
 			
 			return ResponseEntity.ok(retorno);
 		}
