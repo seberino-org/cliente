@@ -141,6 +141,7 @@ public class ClienteRest extends PropagacaoContexto {
 		{
 			
 			logger.debug("Vai validar os dados do cliente para cadastro!");
+			span.log("Vai validar os dados informados para atualizacao do cliente");
 			validaCliente(span,cliente);
 			span.setTag("cpf", cliente.getCpf());
 			span.setTag("nome", cliente.getNome());
@@ -192,7 +193,7 @@ public class ClienteRest extends PropagacaoContexto {
 			retorno.setMensagem( "Cliente registrado com sucesso!");
 			contadorCadastroClientes.increment();
 			retorno.setCodigo("201-CREATED");
-			timer.stop(registry.timer("app.duration", "app", "cliente-rest", "funcao", "atualizaCliente"));
+			
 			return ResponseEntity.ok(retorno);
 		}
 		catch (Exception e)
@@ -204,6 +205,7 @@ public class ClienteRest extends PropagacaoContexto {
 		}
 		finally
 		{
+			timer.stop(registry.timer("app.duration", "app", "cliente-rest", "funcao", "atualizaCliente"));
 			span.finish();
 		}
 
@@ -311,6 +313,7 @@ public class ClienteRest extends PropagacaoContexto {
 			span.finish();
 			throw new Exception("Nome é um campo obrigatório");
 		}
+		span.log("dados informados estao corretos!");
 		span.finish();
 	}
 }
