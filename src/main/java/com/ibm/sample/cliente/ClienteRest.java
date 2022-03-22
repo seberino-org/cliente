@@ -113,16 +113,16 @@ public class ClienteRest extends PropagacaoContexto {
 		RetornoCliente retorno = new RetornoCliente();
 		if (cliente.isEmpty())
 		{
-			logger.info("Cliente não encontrado com o CPF: " + cpf);
-			span.log( "cliente não encontrado com esse cpf");
+			logger.info("Customer not found with this ID: " + cpf);
+			span.log( "Customer not found with the ID suplied");
 			span.finish();
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		else
 		{
 			retorno.setCliente(cliente.get());
-			logger.debug("Cliente encontrado: " + retorno.getCliente().toString());
-			retorno.setMensagem( "Cliente encontrado!");
+			logger.debug("Customer Found: " + retorno.getCliente().toString());
+			retorno.setMensagem( "Customer Found!");
 			retorno.setCodigo("200-FOUND");
 			span.setTag("name", retorno.getCliente().getNome());
 		}
@@ -140,8 +140,8 @@ public class ClienteRest extends PropagacaoContexto {
 		try
 		{
 			
-			logger.debug("Vai validar os dados do cliente para cadastro!");
-			span.log("Vai validar os dados informados para atualizacao do cliente");
+			logger.debug("It will validate the customer data before update in the database!");
+			span.log("It will validate the customer data before update in the database!");
 			validaCliente(span,cliente);
 			span.setTag("cpf", cliente.getCpf());
 			span.setTag("nome", cliente.getNome());
@@ -154,9 +154,9 @@ public class ClienteRest extends PropagacaoContexto {
 			span.setTag("cidade", cliente.getCidade());
 			span.setTag("uf", cliente.getUf());
 			span.setTag("nascimento", cliente.getNasc().toString());
-			logger.debug("Dados validados com sucesso!");
+			logger.debug("Data validated successfully!");
 			
-			logger.debug("Vai pesquisar já o cliente existe");
+			logger.debug("It will validate if the customer exists in the database");
 			Span spanConsulta = tracer.buildSpan("consultaBaseMySQL").asChildOf(span).start();
 			spanConsulta.setTag("sql", "select * from cliente where cpf = ? ");
 			spanConsulta.setTag("cpf", cliente.getCpf());
@@ -167,10 +167,10 @@ public class ClienteRest extends PropagacaoContexto {
 			
 			if (!clienteConsulta.isPresent())
 			{
-				span.log("Não existe cliente cadastrado com esse CPF");
-				logger.info("Não existe cliente cadastro com esse CPF: " + cliente.getCpf());
+				span.log("Does not exist customer with this ID in the database");
+				logger.info("Does not exist customer with this ID in the database: " + cliente.getCpf());
 				retorno.setCliente(clienteConsulta.get());
-				retorno.setMensagem( "Não existe cliente cadastrado com esse CPF");
+				retorno.setMensagem( "Does not exist customer with this ID in the database");
 				retorno.setCodigo("404-CLIENT NOT FOUND");
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -187,10 +187,10 @@ public class ClienteRest extends PropagacaoContexto {
 			spanGravacao.setTag("nascimento", cliente.getNasc().toString());
 			clienteJpa.save(cliente);
 			spanGravacao.finish();
-			logger.info("Cliente atualizado na base de dados com sucesso! " + cliente.toString());
+			logger.info("Customer data updated successfully! " + cliente.toString());
 
 			retorno.setCliente(cliente);
-			retorno.setMensagem( "Cliente atualizado com sucesso!");
+			retorno.setMensagem( "Customer data updated successfully!");
 			contadorCadastroClientes.increment();
 			retorno.setCodigo("202-ACCEPTED");
 			
@@ -200,7 +200,7 @@ public class ClienteRest extends PropagacaoContexto {
 		{
 			span.setTag("error",true);
 			span.setTag("errorMessage", e.getMessage());
-			logger.error("Falha ao atualizar cliente " + e.getMessage(), e);
+			logger.error("Error to update Customer data " + e.getMessage(), e);
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		finally
@@ -220,7 +220,7 @@ public class ClienteRest extends PropagacaoContexto {
 		try
 		{
 			
-			logger.debug("Vai validar os dados do cliente para cadastro!");
+			logger.debug("It will validate the customer data before insert into the database!");
 			validaCliente(span,cliente);
 			span.setTag("cpf", cliente.getCpf());
 			span.setTag("nome", cliente.getNome());
@@ -233,9 +233,9 @@ public class ClienteRest extends PropagacaoContexto {
 			span.setTag("cidade", cliente.getCidade());
 			span.setTag("uf", cliente.getUf());
 			span.setTag("nascimento", cliente.getNasc().toString());
-			logger.debug("Dados validados com sucesso!");
+			logger.debug("Data validated successfully!");
 			
-			logger.debug("Vai pesquisar se já não existe cliente cadastrado com esse CPF");
+			logger.debug("It will validate if the customer exists in the database");
 			Span spanConsulta = tracer.buildSpan("consultaBaseMySQL").asChildOf(span).start();
 			spanConsulta.setTag("sql", "select * from cliente where cpf = ? ");
 			spanConsulta.setTag("cpf", cliente.getCpf());
@@ -246,10 +246,10 @@ public class ClienteRest extends PropagacaoContexto {
 			
 			if (clienteConsulta.isPresent())
 			{
-				span.log("Já existe cliente cadastrado com esse CPF");
-				logger.info("Já existe cliente cadastrado com o CPF: " + cliente.getCpf());
+				span.log("Customer already exists with this ID: " + cliente.getCpf());
+				logger.info("Customer already exists with this ID: " + cliente.getCpf());
 				retorno.setCliente(clienteConsulta.get());
-				retorno.setMensagem( "Já existe cliente cadastrado com esse CPF!");
+				retorno.setMensagem( "Customer already exists with this ID!");
 				retorno.setCodigo("208-CLIENT EXIST");
 				return new ResponseEntity<>(HttpStatus.FOUND);
 			}
@@ -267,10 +267,10 @@ public class ClienteRest extends PropagacaoContexto {
 			spanGravacao.setTag("nascimento", cliente.getNasc().toString());
 			clienteJpa.save(cliente);
 			spanGravacao.finish();
-			logger.info("Cliente armazenado na base de dados com sucesso! " + cliente.toString());
+			logger.info("Customer data included into database successfuly! " + cliente.toString());
 
 			retorno.setCliente(cliente);
-			retorno.setMensagem( "Cliente registrado com sucesso!");
+			retorno.setMensagem( "Customer created!");
 			contadorCadastroClientes.increment();
 			retorno.setCodigo("201-CREATED");
 			timer.stop(registry.timer("app.duration", "app", "cliente-rest", "funcao", "incluiCliente"));
@@ -280,7 +280,7 @@ public class ClienteRest extends PropagacaoContexto {
 		{
 			span.setTag("error",true);
 			span.setTag("errorMessage", e.getMessage());
-			logger.error("Falha ao cadastrar cliente " + e.getMessage(), e);
+			logger.error("Error to add a new client: " + e.getMessage(), e);
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		finally
@@ -294,26 +294,26 @@ public class ClienteRest extends PropagacaoContexto {
 		Span span = tracer.buildSpan("validaDadosCliente").asChildOf(spanPai).start();
 		if (cliente==null)
 		{
-			span.setTag("errorMessage", "Payload inváido, não foram encontrados os dados do cliente");
+			span.setTag("errorMessage", "Payload is invalid, it wasn't found customer data");
 			span.setTag("error", true);
 			span.finish();
-			throw new Exception("Payload inváido, não foram encontrados os dados do cliente");
+			throw new Exception("Payload is invalid, it wasn't found customer data");
 		}
 		if (cliente.getCpf()==null || cliente.getCpf()==0)
 		{
-			span.setTag("errorMessage", "CPF é um campo obrigatorio");
+			span.setTag("errorMessage", "CPF is a requeried field");
 			span.setTag("error", true);
 			span.finish();
-			throw new Exception("CPF é um campo obrigatório");
+			throw new Exception("CPF is a required field");
 		}
 		if (cliente.getNome()==null || cliente.getNome().length()==0)
 		{
-			span.setTag("errorMessage", "Nome é um campo obrigatorio");
+			span.setTag("errorMessage", "Nome is a required field");
 			span.setTag("error", true);
 			span.finish();
-			throw new Exception("Nome é um campo obrigatório");
+			throw new Exception("Nome is a required field");
 		}
-		span.log("dados informados estao corretos!");
+		span.log("Customer data validated successfully!");
 		span.finish();
 	}
 }
