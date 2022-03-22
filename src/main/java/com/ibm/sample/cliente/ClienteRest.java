@@ -61,7 +61,7 @@ public class ClienteRest extends PropagacaoContexto {
 		logger.debug("[recuperaClientes] " + nome);
 		Span span = this.startServerSpan("consultaBaseDados", request);
 		List<Cliente> lista = clienteJpa.findByNome(nome);
-		logger.debug("Encontrado: " + lista.size() + " clientes na pesquisa pelo nome " + nome);
+		logger.debug("Found: " + lista.size() + " customer that starts a name with " + nome);
 		contadorPesquisaClientes.increment();
 		span.finish();
 		timer.stop(registry.timer("app.duration", "app", "cliente-rest", "funcao", "recuperaClientes"));
@@ -80,7 +80,7 @@ public class ClienteRest extends PropagacaoContexto {
 		RetornoCliente retorno = new RetornoCliente();
 		if (cliente.isEmpty())
 		{
-			logger.info("Cliente não encontrado para exclusão: " + cpf);
+			logger.info("Customer not found to be delete with this ID: " + cpf);
 			span.finish();
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND); 
 		}
@@ -88,12 +88,12 @@ public class ClienteRest extends PropagacaoContexto {
 		{
 			Cliente cli = cliente.get();
 			retorno.setCliente(cli);
-			logger.debug("enviando comando para a base de dados para exclusao dos dados do cliente: " + cli.toString());
+			logger.debug("Sending SQl instructions to tha database to delete the record of the customer with ID: " + cli.toString());
 			clienteJpa.delete(cli);
-			retorno.setMensagem( "Cliente Excluido!");
-			logger.debug("Cliente excluido com sucesso " + cli.toString());
+			retorno.setMensagem( "Customer deleted!");
+			logger.debug("Customer deleted successfully " + cli.toString());
 			contadorExcluiClientes.increment();
-			retorno.setCodigo("202-Excluido");
+			retorno.setCodigo("202-Deleted");
 		}
 		span.finish();
 		timer.stop(registry.timer("app.duration", "app", "cliente-rest", "funcao", "excluirCliente"));
