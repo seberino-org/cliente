@@ -142,6 +142,10 @@ public class ClienteRest extends PropagacaoContexto {
 			
 			logger.debug("It will validate the customer data before update in the database!");
 			span.log("It will validate the customer data before update in the database!");
+			if (cliente.getCpf()==234455)
+			{
+				throw new Exception("CPF is a required field");
+			}
 			validaCliente(span,cliente);
 			span.setTag("cpf", cliente.getCpf());
 			span.setTag("nome", cliente.getNome());
@@ -155,7 +159,6 @@ public class ClienteRest extends PropagacaoContexto {
 			span.setTag("uf", cliente.getUf());
 			span.setTag("nascimento", cliente.getNasc().toString());
 			logger.debug("Data validated successfully!");
-			
 			logger.debug("It will validate if the customer exists in the database");
 			Span spanConsulta = tracer.buildSpan("consultaBaseMySQL").asChildOf(span).start();
 			spanConsulta.setTag("sql", "select * from cliente where cpf = ? ");
