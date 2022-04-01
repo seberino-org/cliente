@@ -204,7 +204,7 @@ public class ClienteRest extends PropagacaoContexto {
 			span.setTag("error",true);
 			span.setTag("errorMessage", e.getMessage());
 			logger.error("Error to update Customer data " + e.getMessage(), e);
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		finally
 		{
