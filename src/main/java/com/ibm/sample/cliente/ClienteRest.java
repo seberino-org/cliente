@@ -142,10 +142,10 @@ public class ClienteRest extends PropagacaoContexto {
 			
 			logger.debug("It will validate the customer data before update in the database!");
 			span.log("It will validate the customer data before update in the database!");
-			/*if (cliente.getCpf()==234455)
+			if (cliente.getCpf()==234455)
 			{
 				throw new Exception("CPF is a required field");
-			}*/
+			}
 			validaCliente(span,cliente);
 			span.setTag("cpf", cliente.getCpf());
 			span.setTag("nome", cliente.getNome());
