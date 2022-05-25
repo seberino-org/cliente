@@ -78,7 +78,7 @@ public class ClienteRest extends PropagacaoContexto {
 		span.setTag("cpf", cpf);
 		Optional<Cliente> cliente= clienteJpa.findById(cpf);
 		RetornoCliente retorno = new RetornoCliente();
-		if (cliente.isEmpty())
+		if (!cliente.isPresent())
 		{
 			logger.info("Customer not found to be delete with this ID: " + cpf);
 			span.finish();
