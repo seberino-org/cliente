@@ -111,7 +111,7 @@ public class ClienteRest extends PropagacaoContexto {
 		Optional<Cliente> cliente= clienteJpa.findById(cpf);
 		contadorRequperaCliente.increment();
 		RetornoCliente retorno = new RetornoCliente();
-		if (cliente.isEmpty())
+		if (!cliente.isPresent())
 		{
 			logger.info("Customer not found with this ID: " + cpf);
 			span.log( "Customer not found with the ID suplied");
