@@ -172,7 +172,7 @@ public class ClienteRest extends PropagacaoContexto {
 			{
 				span.log("Does not exist customer with this ID in the database");
 				logger.info("Does not exist customer with this ID in the database: " + cliente.getCpf());
-				retorno.setCliente(clienteConsulta.get());
+				//retorno.setCliente(clienteConsulta.get());
 				retorno.setMensagem( "Does not exist customer with this ID in the database");
 				retorno.setCodigo("404-CLIENT NOT FOUND");
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
